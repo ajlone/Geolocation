@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Geolocations App"
+	creationComplete="getDestination.send()">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			import spark.events.IndexChangeEvent;
+			
+			
+			[Bindable]
+			protected var myDestinations:ArrayCollection;
+			
+			protected function getDestination_resultHandler(event:ResultEvent):void
+			{
+				// XML FIle <location> <site>..
+				myDestinations = event.result.location.site;		
+			}
+			
+			protected function destinationList_changeHandler(event:IndexChangeEvent):void
+			{	 
+				navigator.pushView(views.Location, destinationList.selectedItem);
+			}
+			
+				
+		]]>
+	</fx:Script>
+		
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:HTTPService url="http://ravinderkang.com/app/geolocations.xml"
+					   id="getDestination"
+					   result="getDestination_resultHandler(event)"/>
+	</fx:Declarations>
+	
+	
+	<s:List id="destinationList" change="destinationList_changeHandler(event)" left="0" right="0" top="0" bottom="0"
+			dataProvider="{myDestinations}"
+			labelField="name">
+	</s:List>
+	
+	</s:View>

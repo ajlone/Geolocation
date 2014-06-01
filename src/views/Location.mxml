@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="{data.building} {data.name}"
+	creationComplete="init()">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.globalization.DateTimeFormatter;
+			import flash.sensors.Geolocation;
+			
+			protected var reached:Boolean = false;
+			protected var geoLocation:Geolocation;
+						
+			protected function init():void
+			{
+				if(Geolocation.isSupported==true){
+					geoLocation = new Geolocation();
+					geoLocation.setRequestedUpdateInterval(1000);
+					geoLocation.addEventListener(GeolocationEvent.UPDATE,handleLocationRequest); 					
+				} 
+					
+				else {
+					geoResponse.text = "Geolocation feature not supported"; 
+				}
+								
+				NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, onDeactivate);
+			}		
+			
+			protected function onDeactivate(event:Event):void
+			{
+				NativeApplication.nativeApplication.exit();
+			}
+			
+			public function handleLocationRequest(event:GeolocationEvent):void { 
+				
+				var d:Date = new Date();
+				var dtf:DateTimeFormatter = new DateTimeFormatter("en-US");
+				dtf.setDateTimePattern("MM-dd hh:mm:ss");
+				var time:Object =(dtf.format(d));
+				
+				
+				geoResponse.text = "latitude: " + event.latitude.toString() + "\n" 
+					+ "longitude: " + event.longitude.toString()+ "\n"
+					+"XML Latitude: " + data.latitude + "\n"
+					+"XML Longitude: "+ data.longitude +"\n"
+					+ "Current Time: " + time +  "\n"				
+				
+				googleImage.source = "http://maps.google.com/maps/api/staticmap?" 
+					+ "center=" + data.latitude + "," + data.longitude
+					+ "&zoom=18" + "&size=640x640"
+					+ "&markers=color:red%7Clabel:S%7C" + data.latitude + "," + data.longitude
+					+ "&markers=color:green%7Clabel:" + data.name + "%7C" + event.latitude + "," + event.longitude
+					+ "&sensor=true";
+				
+				//Formula for calculating the distance between two points  
+				
+				//Convert input values from degrees to radians by multiplying by Math.Pi/180
+				var lat1:Number = event.latitude * (Math.PI/180);  
+				var long1:Number = event.longitude * (Math.PI/180); 
+				var lat2:Number = data.latitude * (Math.PI/180); 
+				var long2:Number = data.longitude * (Math.PI/180);  
+				
+				var earthRadius:Number = 3958.756; // statute miles  
+				var deltaLat:Number = lat2 - lat1;  
+				var deltaLong:Number = long2 - long1;  
+				var a:Number = Math.sin(deltaLat / 2.0) * Math.sin(deltaLat / 2.0) +  
+					Math.cos(lat1) * Math.cos(lat2) *  
+					Math.sin(deltaLong / 2.0) * Math.sin(deltaLong / 2.0);  
+				var c:Number = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));  
+				var distance:Number = earthRadius * c;  
+				
+				
+				//Give an update based on distance
+				
+				if (distance >= .1){
+					
+				status.text = " You are " + int((distance)*10)/10 + " miles away from " + data.name+".";
+					
+				}
+				
+				else if( (distance<.1) && (distance >.024)){ 
+					
+					status.text = "You are "+ int(distance*5280)+ "feet away from " + data.name +".";
+				}
+				
+				else if((distance<.024) && (distance>=0)){
+				status.text = " You've reached " + data.name+ "." + "\n";
+				status.text += " Current Time: " + time;
+				reached = true;
+				
+				}
+				
+			}				
+			
+			public function appendFile():void{
+				
+				var d:Date = new Date();
+				var dtf:DateTimeFormatter = new DateTimeFormatter("en-US");
+				dtf.setDateTimePattern("MM-dd hh:mm:ss");
+				var current_time:Object =(dtf.format(d));
+				
+				if(reached == true){
+					
+					var visitFile:File =
+						File.applicationStorageDirectory.resolvePath("list.txt");
+					var fs:FileStream = new FileStream();
+					fs.open(visitFile,FileMode.APPEND);
+					fs.writeUTFBytes(data.building +" "+data.name +" "+ current_time+ "\n");
+					fs.close();
+					navigator.pushView(views.list);	
+				}
+			}
+			
+			public function viewList_clickHandler(event:MouseEvent):void
+			{				
+				navigator.pushView(views.list);
+			}	
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:TextArea id="geoResponse" width="100%" top="0" height="125"/>
+	<s:Image id="googleImage" top = "126" width="300" height="326"/>
+	<s:TextArea id="status" left="0" height= "15%" bottom= "55" width="100%" editable="false"/>
+		
+	
+	<s:Button left="0" bottom="0" width="100" height="50" label="Back" click="navigator.popView()"/>
+	<s:Button left="111" bottom="0" width="100" height="50"  label="Save Visit" click="appendFile()"/>
+	<s:Button right="0" bottom="0" width="100" height="50" label="View List" click="viewList_clickHandler(event)"/>
+	
+	
+</s:View>
+

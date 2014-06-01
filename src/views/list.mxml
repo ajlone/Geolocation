@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" add="display_addHandler(event)"  title="Places Visited">
+		
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			[Bindable] public var visited:ArrayCollection;
+			
+			public function display_addHandler(event:FlexEvent):void
+			{
+				var visitFile:File = File.applicationStorageDirectory.resolvePath("list.txt");
+				if(visitFile.exists){
+					var fs:FileStream = new FileStream();
+					fs.open(visitFile, FileMode.READ);
+					var result:String = fs.readUTFBytes(fs.bytesAvailable);
+					var items:Array = result.split("\n");
+					items.pop();//used to pop the last item as it is a blank
+					visited = new ArrayCollection(items);
+					fs.close();
+				}else{
+					//if no file then pass an empty array
+					visited = new ArrayCollection([]);}	
+			}
+			
+			protected function ReadfromFile_clickHandler(event:MouseEvent):void
+			{
+				var visitFile:File = File.applicationStorageDirectory.resolvePath("list.txt");
+				if(visitFile.exists){
+					var fs:FileStream = new FileStream();
+					fs.open(visitFile, FileMode.READ);
+					var result:String = fs.readUTFBytes(fs.bytesAvailable);
+					var items:Array = result.split("\n");
+					items.pop();//used to pop the last item as it is a blank
+					visited = new ArrayCollection(items);
+					fs.close();
+				}else{
+					//if no file then pass an empty array
+					visited = new ArrayCollection([]);}}
+			
+			protected function Delete_clickHandler(event:MouseEvent):void
+			{
+				var visitFile:File = File.applicationStorageDirectory.resolvePath("list.txt");
+				if(visitFile.exists){
+					visitFile.deleteFile()
+					ReadfromFile_clickHandler(event);
+				}
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:List dataProvider="{visited}" top="6" left="10" right="10" bottom="180" /> 
+	
+		
+	<s:Button  left="0" bottom="0" width="100" label="Home"
+			   click="navigator.popToFirstView()" />
+	<s:Button right="0" bottom="0" width="100" label="Back" click="navigator.popView()"/>
+	
+	
+	
+	
+</s:View>

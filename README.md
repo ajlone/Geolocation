@@ -1,1 +1,1 @@
-* Geolocations application built on Flash Builder
+* Geolocation application built on Flash Builder

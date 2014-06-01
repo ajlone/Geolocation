@@ -50,9 +50,9 @@
 				
 				googleImage.source = "http://maps.google.com/maps/api/staticmap?" 
 					+ "center=" + data.latitude + "," + data.longitude
-					+ "&zoom=18" + "&size=640x640"
-					+ "&markers=color:red%7Clabel:S%7C" + data.latitude + "," + data.longitude
-					+ "&markers=color:green%7Clabel:" + data.name + "%7C" + event.latitude + "," + event.longitude
+					+ "&zoom=18" + "&size=600x600"
+					+ "&markers=color:red%6Clabel:S%6C" + data.latitude + "," + data.longitude
+					+ "&markers=color:blue%6Clabel:" + data.name + "%6C" + event.latitude + "," + event.longitude
 					+ "&sensor=true";
 				
 				//Formula for calculating the distance between two points  
